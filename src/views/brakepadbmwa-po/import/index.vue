@@ -10,7 +10,7 @@
       <div v-if="active === 0" class="custBrch">
         <el-form :model="form" ref="form" label-width="auto">
           <el-form-item prop="custbrushcode">
-            <el-select v-model="selectCustBrchId" placeholder="请选择客户分支" @change="selectCustBrch" filterable clearable>
+            <el-select v-model="selectCustBrchId" placeholder="请选择客户分支" @change="selectCustBrch" filterable>
               <el-option
                 v-for="custBrchCode in custBrchCode"
                 :key="custBrchCode.custBrchId"
@@ -49,7 +49,7 @@
 <!--      第三步确认结果 接受后端返回的结果集到Table-->
       <div v-if="active===2" class="confirmData">
         <el-table v-loading="loading" :data="purchaseorderInputList" >
-          <el-table-column prop="customerBranchCode" align="center" label="Customer-Branch Code" width="180">
+          <el-table-column prop="customerBranchCode" align="center" label="Customer Branch Code" width="180">
             <template slot-scope="scope">
               <span>{{CustBrchCodeValue}}</span>
             </template>

@@ -4,6 +4,23 @@
       <h3>PO Header Table</h3>
     </div>
     <el-form :model="queryParams" ref="queryForm" size="small" :inline="true" v-show="showSearch" label-width="68px">
+      <el-form-item label="Customer Branch Code" prop="custBrchId">
+<!--        <el-input-->
+<!--          v-model="queryParams.custBrchId"-->
+<!--          placeholder="请输入Customer-Branch Code"-->
+<!--          clearable-->
+<!--          @keyup.enter.native="handleQuery"-->
+<!--        />-->
+        <el-select v-model="queryParams.custBrchId" placeholder="请选择Customer Branch Code" @change="selectCustBrch" filterable >
+          <el-option
+            v-for="custBrchCode in custBrchCode"
+            :key="custBrchCode.custBrchId"
+            :label="custBrchCode.customerBranchCode"
+            :value="custBrchCode.custBrchId"
+          >
+          </el-option>
+        </el-select>
+      </el-form-item>
       <el-form-item label="Sales Order #" prop="salesOrderNumber">
         <el-input
           v-model="queryParams.salesOrderNumber"
@@ -23,23 +40,25 @@
       <el-form-item label="Requested Delivery Date">
         <el-date-picker
           v-model="daterangeRequestedDeliveryDate"
-          style="width: 240px"
-          value-format="yyyy-MM-dd"
-          type="daterange"
+          style="width: auto"
+          value-format="yyyy-MM-dd HH:mm:ss"
+          type="datetimerange"
           range-separator="-"
           start-placeholder="开始日期"
           end-placeholder="结束日期"
+          :default-time="['00:00:00', '23:59:59']"
         ></el-date-picker>
       </el-form-item>
       <el-form-item label="Order Date">
         <el-date-picker
           v-model="daterangeCreationDate"
-          style="width: 240px"
-          value-format="yyyy-MM-dd"
-          type="daterange"
+          style="width: auto"
+          value-format="yyyy-MM-dd HH:mm:ss"
+          type="datetimerange"
           range-separator="-"
           start-placeholder="开始日期"
           end-placeholder="结束日期"
+          :default-time="['00:00:00', '23:59:59']"
         ></el-date-picker>
       </el-form-item>
       <el-form-item>
@@ -96,6 +115,7 @@
             <el-button
               type="success"
               plain
+              :disabled="multiple"
               icon="el-icon-upload"
               @click="pushOrder"
               circle
@@ -119,17 +139,17 @@
             <el-tag v-else-if="scope.row.readFlag === 1" type="info"> Pushed</el-tag>
           </template>
         </el-table-column>
-        <el-table-column label="CustomerBranch Code" align="center" prop="customerBranchCode" width="150"/>
-        <el-table-column label="Sales Order #" align="center" prop="salesOrderNumber" width="150"/>
-        <el-table-column label="Purchase Order #" align="center" prop="purchaseOrderNumber" width="150"/>
-        <el-table-column label="Requested Delivery Date" align="center" prop="requestedDeliveryDate" width="150" >
+        <el-table-column label="CustomerBranch Code" align="center" prop="customerBranchCode" width="auto" />
+        <af-table-column label="Sales Order #" align="center" prop="salesOrderNumber" />
+        <el-table-column label="Purchase Order #" align="center" prop="purchaseOrderNumber" width="180px"/>
+        <el-table-column label="Requested Delivery Date" align="center" prop="requestedDeliveryDate" width="auto" >
           <template slot-scope="scope">
             <span>{{ parseTime(scope.row.requestedDeliveryDate, '{y}-{m}-{d}') }}</span>
           </template>
         </el-table-column>
-        <el-table-column label="Quantity(Set)" align="center" prop="sumOrderedQuantity" width="150" ></el-table-column>
-        <el-table-column label="Amount" align="center" prop="amount" />
-        <el-table-column label="Order Date" align="center" prop="creationDate" width="150" >
+        <el-table-column label="Quantity(Set)" align="center" prop="sumOrderedQuantity" width="auto" ></el-table-column>
+        <el-table-column label="Amount" align="center" prop="amount" width="160px" />
+        <el-table-column label="Order Date" align="center" prop="creationDate" width="auto" >
           <template slot-scope="scope">
             <span>{{ parseTime(scope.row.creationDate, '{y}-{m}-{d}') }}</span>
           </template>
@@ -318,6 +338,7 @@ import {
   updatePurchaseorder
 } from '@/api/brakepadbmwa-po/purchaseorder'
 import axios from 'axios'
+import { selectCustBrchCode } from '@/api/brakepadbmwa-customerbranch/customerbranch'
 
 export default {
   name: 'Purchaseorder',
@@ -352,6 +373,9 @@ export default {
       purchaseorderList: [],
       // purchaseorder表格数据
       purchaseOrderLineList: [],
+
+      custBrchCode: [],
+      CustBrchCodeValue: '',
       // 弹出层标题
       title: '',
       // 是否显示弹出层
@@ -396,6 +420,7 @@ export default {
     }
   },
   computed: {
+
     filterData() {
       const arr = []
       this.purchaseOrderLineList.forEach(item => {
@@ -410,10 +435,24 @@ export default {
   },
   created() {
     this.getList()
+    this.getCustBrchCode()
   },
   methods: {
-    pushOrder() {
-      axios.get('http://192.168.10.115:8090/po').then(res => {
+    selectCustBrch(custBrchId) {
+      let obj = this.custBrchCode.find(item => item.custBrchId === custBrchId)
+      this.CustBrchCodeValue = obj.customerBranchCode
+      // this.settlementCurrencyValue = obj.settlementCurrencyVal
+    },
+    getCustBrchCode() {
+      selectCustBrchCode().then(response => {
+        this.custBrchCode = response.data
+        this.custBrchCode = JSON.parse(JSON.stringify(this.custBrchCode))
+      })
+    },
+    // 推送定单到工厂
+    pushOrder(row) {
+      const puchOrdrHIds = row.puchOrdrHId || this.ids
+      axios.get('http://192.168.10.115:8090/po/'+ puchOrdrHIds + '/' + this.$store.state.user.userId).then(res => {
         this.$message({
           message: res.data.message,
           type: 'success'
@@ -570,7 +609,7 @@ export default {
     handleDelete(row) {
       const puchOrdrHIds = row.puchOrdrHId || this.ids
       const SalesOrderNumbers = row.salesOrderNumber || this.deleteSalesNo
-      this.$modal.confirm('是否确认删除PurchaseOrder Overview编号为"' + puchOrdrHIds + '"的数据项？').then(function() {
+      this.$modal.confirm('是否确认删除定单编号为"' + SalesOrderNumbers + '"的数据项？').then(function() {
         return delPurchaseorder(puchOrdrHIds, SalesOrderNumbers)
       }).then(() => {
         this.getList()

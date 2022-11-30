@@ -110,7 +110,7 @@
       <el-table-column type="selection" width="55" align="center"/>
       <!--      <el-table-column label="CustBrchId" align="center" prop="custBrchId" />-->
       <el-table-column label="Customer Code" align="center" prop="customerCode"/>
-      <el-table-column label="Customer Name" align="center" prop="customerName"/>
+      <af-table-column label="Customer Name" align="center" prop="customerName"/>
       <el-table-column label="Market" align="center" prop="marketVal">
         <template slot-scope="scope">
           <dict-tag :options="dict.type.vs_market" :value="scope.row.marketVal"/>

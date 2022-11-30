@@ -8,7 +8,10 @@ const user = {
     avatar: '',
     roles: [],
     permissions: [],
+    // 添加nickName用于显示右上角用户名和userId 用于帆软传参数 deptId
     nickName: '',
+    userId: '',
+    deptId: ''
   },
 
   mutations: {
@@ -32,6 +35,12 @@ const user = {
     },
     SET_NICKNAME: (state, nickName) => {
       state.nickName = nickName
+    },
+    SET_USERID: (state, userId) => {
+      state.userId = userId
+    },
+    SET_DEPTID: (state, deptId) => {
+      state.deptId = deptId
     }
   },
 
@@ -69,7 +78,10 @@ const user = {
             commit('SET_ROLES', ['ROLE_DEFAULT'])
           }
           commit('SET_NAME', user.userName)
+          // 添加nickName用于显示右上角用户名和userId 用于帆软传参数 deptId
           commit('SET_NICKNAME', user.nickName)
+          commit('SET_USERID', user.userId)
+          commit('SET_DEPTID', user.deptId)
           commit('SET_AVATAR', avatar)
           resolve(res)
         }).catch(error => {
